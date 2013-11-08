@@ -1,0 +1,21 @@
+body {
+  padding-top: 50px;
+}
+.table-responsive {
+  margin-left: 100px;
+}
+.glyphicon {
+  margin-left: 5px;
+}
+th:first-child {
+  width: 70px;
+}
+th:nth-child(2) {
+  width: 200px;
+}
+.form-edit {
+  margin-top: 20px;
+}
+.form-edit input[type=checkbox] {
+  width: 34px;
+}

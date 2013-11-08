@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>iPresst管理后台</title>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="banner">
+    <div class="container">
+      <div class="navbar-header">
+        <a href="/" class="navbar-brand">iPresst管理后台</a>
+      </div>
+      <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+        <ul class="nav navbar-nav">
+          {% for nav in navs %}
+          <li{% if nav.name == active %} class="active"{% endif %}>
+            <a href="/{{ nav.name|lower }}{% if nav.name %}/{% endif %}">{{ nav.label }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="/">更新首页</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  {% if collection %}
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover table-condensed">
+      <thead>
+        <tr>
+          <th></th>
+          {% for kv in kvs %}
+          <th><a href="/{{ active|lower }}/?s={% if kv.k == s %}-{{ kv.k }}{% else %}{{ kv.k }}{% endif %}">{{ kv.v }}</a></th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for coll in collection %}
+        <tr>
+          <td class="btn-group">
+            <a class="btn btn-default btn-xs" href="/{{ active|lower }}/{{ coll.id }}/?u={{ ('/' + active + '/')|lower|url_encode }}"><i class="glyphicon glyphicon-pencil"></i></a>
+            <button class="btn btn-default btn-xs remove-one" data-id="{{ coll.id }}"><i class="glyphicon glyphicon-remove"></i></button>
+          </td>
+          {% for kv in kvs %}
+          <td>{% if kv.k == 'id' %}<a href="/{{ active|lower }}/{{ coll[kv.k] }}/?u={{ ('/' + active + '/')|lower|url_encode }}">{{ coll[kv.k]|default('') }}</a>{% elseif config.schema[kv.k].type == Boolean %}{% if coll[kv.k] %}<i class="glyphicon glyphicon-ok"></i>{% endif %}{% else %}{{ coll[kv.k]|default('') }}{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+  {% if n.length > 1 %}
+  <ul class="pagination">
+    {% if n.length > 5 %}
+    {% if p == 0 %}
+    <li class="disabled"><span>&laquo;</span></li>
+    <li class="disabled"><span>&lt;</span></li>
+    {% else %}
+    <li><a href="/{{ active|lower }}/">&laquo;</a></li>
+    <li><a href="/{{ active|lower }}/?p={{ p - 1 }}">&lt;</a></li>
+    {% endif %}
+   
+    {% endif %}
+
+    {% for i in n %}
+    <li{% if i == p %} class="active"{% endif %}><a href="/{{ active|lower }}/?p={{ i }}">{{ i + 1 }}</a></li>
+    {% endfor %}
+
+    {% if n.length > 5 %}
+    {% if p == n.length - 1 %}
+    <li class="disabled"><span>&gt;</span></li>
+    <li class="disabled"><span>&raquo;</span></li>
+    {% else %}
+    <li><a href="/{{ active|lower }}/?p={{ parseInt(p) + 1 }}">&gt;</a></li>
+    <li><a href="/{{ active|lower }}/?p={{ n.length - 1 }}">&raquo;</a></li>
+    {% endif %}
+   
+    {% endif %}
+  </ul>
+  {% endif %}
+  </div>
+
+  {% elseif doc %}
+  <div class="form-edit">
+    <form class="form-horizontal" role="form" method="POST">
+      {% for kv in kvs %}
+      {% if kv.k != 'id' %}
+      <div class="form-group">
+        <label class="col-sm-2 control-label">{{ kv.v }}</label>
+        <div class="col-sm-10">
+          {% if config.schema[kv.k].type[0] %}
+          {% for v in doc[kv.k]|default([]) %}
+          <input{% if config.schema[kv.k].type == Boolean %} type="checkbox"{% if doc[kv.k] %} checked="checked"{% endif %}{% else %} type="text"{% endif %} class="form-control" value="{{ v|default('') }}" name="{{ kv.k }}">
+          {% endfor %}
+          {% else %}
+          <input{% if config.schema[kv.k].type == Boolean %} type="checkbox"{% if doc[kv.k] %} checked="checked"{% endif %}{% else %} type="text"{% endif %} class="form-control" value="{{ doc[kv.k]|default('') }}" name="{{ kv.k }}">
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+      <div class="form-group">
+        <label class="col-sm-2 control-label"></label>
+        <div class="col-sm-10">
+          <input type="submit" class="btn btn-primary" value="Submit">
+          <a href="{{ u|default('/' + active|lower + '/') }}" class="btn btn-info">Cancel</a>
+          <a href="{{ u|default('/' + active|lower + '/') }}" class="btn btn-danger">Delete</a>
+        </div>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.9/require.min.js" data-main="/js/main.js"></script>
+</body>
+</html>
