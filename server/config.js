@@ -33,6 +33,7 @@ module.exports = {
     //   }
     // }
     uri: 'mongodb://127.0.0.1:27017/ipresst',
+    uri2: 'mongodb://127.0.0.1:27017/alloyaccount',
 
     collection: {
       Type: {
@@ -61,6 +62,9 @@ module.exports = {
           search: ['title', 'type']
         }
       }
+    },
+    collection2: {
+      
     }
   }
 };

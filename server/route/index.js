@@ -13,7 +13,7 @@ var per = 20;
 function index(req, res, next) {
   var navs = req.next.navs;
 
-  return res.render('list', {navs: navs, active: ''});
+  return res.render('index', {navs: navs});
 }
 
 function fill(req, res, next) {
@@ -92,7 +92,7 @@ function listAll(req, res, next) {
       function(cb) {
         self.app.db[collection].count(or).exec(function(err, cnt) {
           if(err) return cb(err);
-          cb(null, Array.apply(0, Array(Math.ceil(cnt / per))).map(function(item, index){return index;}));
+          cb(null, cnt);
         });
       },
       function(cb) {
@@ -110,7 +110,11 @@ function listAll(req, res, next) {
     ], function(err, ret) {
       if(err) return res.json({recode: -1, msg: 'read db error'});
 
-      return res.render('list', {navs: navs, active: collection, kvs: kvs, n: ret[0], p: p, s: s, collection: ret[1], config: self.app.config[collection]});
+      var n = Array.apply(0, Array(Math.ceil(ret[0] / per))).map(function(item, index){
+        return index;
+      });
+
+      return res.render('list', {navs: navs, active: collection, kvs: kvs, n: n, p: p, s: s, cnt: ret[0], collection: ret[1], config: self.app.config[collection]});
     });
   } catch(e) {
     return res.json({recode: -1, msg: 'url error'});
@@ -121,19 +125,13 @@ function update(req, res, next) {
   var collection = req.params.collection.upperFirst(),
     id = req.params.id;
 
-  var u = req.query.u;
-
   var param = req.body;
 
-  var schema = self.app.config[collection].schema;
-  for(var k in schema) {
-    (schema[k].type == Boolean) && (param[k] == 'true' ? param[k] = true : param[k] = false);
-  }
+  console.log(param);
+  console.log(self.app.db.WorkSchema.path('title'));
+  console.log(self.app.db.WorkSchema.path('like'));
 
-
-  console.log(typeof param.isPublic);
-
-  return res.redirect(u);
+  return res.json({recode: -1, msg: 'update db error'});
 
   // self.app.db[collection].findByIdAndUpdate(id, {$set: param}).exec(function(err) {
   //   if(err) return res.json({recode: -1, msg: 'update db error'});
@@ -157,10 +155,52 @@ module.exports = function(app) {
   self.app = app;
 
   app.get('/', fill, index);
-  app.get('/:collection/', fill, listAll);
-  app.get('/:collection/:id/', fill, listOne);
 
-  app.post('/:collection/:id/', update);
+  app.get('/view/:collection/', fill, listAll);
+  app.get('/view/:collection/:id/', fill, listOne);
 
-  app.delete('/:collection/:id/', remove);
+  app.put('/view/:collection/:id/', update);
+
+  app.delete('/view/:collection/:id/', remove);
+
+  app.get('/chart/:collection/', chart);
+
+}
+
+function chart(req, res, next) {
+  var collection = req.params.collection.upperFirst();
+
+  function groupByDay(cond, cb, er) {
+    if(arguments.length == 2) {
+      er = cb;
+      cb = cond;
+      cond = undefined;
+    }
+
+    var option = {};
+
+    option.map = function() {
+      var date = [this.createDate.getFullYear(), this.createDate.getMonth() + 1, this.createDate.getDate()].join('-');
+      emit(date, 1);
+    };
+
+    option.reduce = function(k, v) {
+      return Array.sum(v);
+    };
+
+    if(cond) option.query = cond;
+
+    self.app.db[collection].mapReduce(option, function(err, ret) {
+      if(err) return er(err);
+      return cb(ret);
+    });
+  }
+
+  groupByDay(function(ret) {
+    return res.json(ret);
+  }, function(err) {
+    console.log(err);
+    return res.json();
+  });
+
 }

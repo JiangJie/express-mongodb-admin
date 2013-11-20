@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>iPresst管理后台</title>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="/css/main.css">
+  {% block css %}
+  {% endblock %}
+</head>
+<body>
+  <header class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="banner">
+    <div class="container">
+      <div class="navbar-header">
+        <a href="/" class="navbar-brand">iPresst管理后台</a>
+      </div>
+      <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+        <ul class="nav navbar-nav">
+          {% for nav in navs %}
+          <li{% if nav.name == active %} class="active"{% endif %}>
+            <a href="{% if nav.name %}/view/{{ nav.name|lower }}/{% else %}/{% endif %}">{{ nav.label }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="/">更新首页</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  {% block content %}
+  <div></div>
+  {% endblock %}
+
+  {% block js %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.9/require.min.js" data-main="/js/main.js"></script>
+  {% endblock %}
+</body>
+</html>

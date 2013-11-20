@@ -23,6 +23,10 @@ var app = express();
 //setup mongoose
 app.db = mongoose.createConnection(config.mongodb.uri);
 app.db.on('error', console.error.bind(console, 'mongoose connection error: '));
+
+app.db2 = mongoose.createConnection(config.mongodb.uri2);
+app.db2.on('error', console.error.bind(console, 'db2 mongoose connection error: '));
+
 app.db.once('open', function () {
   console.log('db opened');
 
@@ -32,6 +36,11 @@ app.db.once('open', function () {
     var schema = app.db[modal + 'Schema'] = new Schema(config.mongodb.collection[name].schema, config.mongodb.collection[name].option);
 
     app.db[modal] = app.db.model(modal, schema);
+
+    var t = new app.db[modal]({name: 'dsfsf'});
+    t.validate(function(err) {
+      console.log('err', err);
+    });
 
     app.config = app.config || {};
     app.config[modal] = {};
@@ -50,6 +59,20 @@ app.db.once('open', function () {
     // }
   }
   console.log(typeof app.config.Work.schema.like.type[0]);
+});
+
+app.db2.once('open', function() {
+  console.log('db2 opened');
+
+  var User = app.db2.model('User', new Schema({
+    uid: {type: String},
+    pwd: {type: String, required: true}
+  }, {collection: 'user'}));
+
+  var u = new User({uid: 123456});
+  u.validate(function(err) {
+    console.log('user save err ', err);
+  });
 });
 
 // all environments

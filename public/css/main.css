@@ -1,7 +1,7 @@
 body {
   padding-top: 50px;
 }
-.table-responsive {
+.toolbar, .table-responsive {
   margin-left: 100px;
 }
 .glyphicon {
